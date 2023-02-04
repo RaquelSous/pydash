@@ -3,8 +3,22 @@ from player.parser import *
 from r2a.ir2a import IR2A
 from player.player import *
 from math import sqrt
+from math import tau
 
 class R2AFuzzy(IR2A):
+
+    # Calculando a estimativa do Throughtput
+    def calc_throughput(self, throughput, index):
+        if throughput == 0:                         # A primeira vez que o algoritmo é executado, o valor de throughput é 0
+            throughput = self.throughputs[index]    #
+        #  The throughput of the segment i is estimated at the client as
+        else:
+            r = (abs(throughput[index]))/(throughput[index])
+            b = 0.0
+            d = 60
+            throughput = (b * tau) / (d - r)
+        return throughput
+
 
     def __init__(self, id):
         IR2A.__init__(self, id)
@@ -121,6 +135,11 @@ class R2AFuzzy(IR2A):
         return f_num / f_den
 
     def handle_segment_size_response(self, msg):
+        t = time.perf_counter() - self.request_time
+        # Vazão
+        #self.vazao[self.qi] = msg.get_bit_length() / t
+        self.vazao.append(msg.get_bit_length() / t)
+        #self.Ts[self.Tsi] = (msg.get_bit_length() / t) 
         self.send_up(msg)
 
     def initialize(self):
